@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>第一步：搭架子</title>
+    <script type="text/javascript" src="./lib/three.js"></script>
+    <script type="text/javascript" src="./lib/tween.min.js"></script>
+    <script type="text/javascript" src="./lib/three-orbit-controls.js"></script>
+    <style type="text/css">
+        div#canvas-frame {
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            background-color: #EEEEEE;
+        }
+    </style>
+</head>
+<body onload="threeStart();">
+<div id="canvas-frame"></div>
+<script>
+    var renderer;//渲染器
+    var width;//页面宽度
+    var height;//页面高度
+
+    window.requestAnimFrame = (function () {//如果有变化则可能还需要requestAnimationFrame刷新
+        return window.requestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                window.webkitRequestAnimationFrame;
+    })();
+
+    //开始
+    function threeStart() {
+        initThree();
+        initCamera();
+        initScene();
+        initLight();
+        initObject();
+        render();
+    }
+
+    //根据页面宽度和高度创建渲染器，并添加容器中
+    function initThree() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+        renderer.setSize(width, height);
+        renderer.setClearColor(0xFFFFFF, 1.0);
+        document.getElementById('canvas-frame').appendChild(renderer.domElement);
+    }
+
+    //创建相机，并设置正方向和中心点
+    var camera;
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, width / height, 1, 10000);
+        camera.position.x = 300;
+        camera.position.y = 300;
+        camera.position.z = 600;
+        camera.up.x = 0;//正方向
+        camera.up.y = 1;
+        camera.up.z = 0;
+        camera.lookAt({
+            x: 0,
+            y: 0,
+            z: 0
+        });
+        var controlls = new THREE.OrbitControls(camera, renderer.domElement)
+        controlls.target = new THREE.Vector3(0, 0, -150);//设置控制点
+    }
+
+    //创建场景，后续元素需要加入到场景中才会显示出来
+    var scene;
+    function initScene() {
+        scene = new THREE.Scene();
+    }
+
+    //创建光线
+    var light;
+    function initLight() {
+        light = new THREE.AmbientLight(0xfefefe);
+        scene.add(light);
+    }
+
+    //创建展示场景所需的各种元素
+    var cubeAttr = {
+        width: 50,
+        height: 50,
+        gao: 50
+    }
+    var obj
+    var objArr
+    var cube
+    var materials = []
+    var myFaces = []
+    var color = [
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'red',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'blue',
+        'green',
+        'green',
+        'green',
+        'green',
+        'green',
+        'green',
+        'green',
+        'green',
+        'green'
+    ]
+    var colorsflag = 0
+    function initObject() {
+        for (var i = 0; i < 3; i++) {
+            for (var j = 0; j < 3; j++) {
+                for (var k = 0; k < 3; k++) {
+                    obj
+                    colorsflag++;
+                    cube = new THREE.BoxGeometry(cubeAttr.width, cubeAttr.height, cubeAttr.gao)
+                    var texture = new THREE.Texture(faces(color[colorsflag]));
+//                            var texture = new THREE.Texture('./lib/tuhuanCore.jpg');
+                    console.log(color[colorsflag], colorsflag, color)
+                    texture.needsUpdate = true;
+                    obj = new THREE.Mesh(cube, new THREE.MeshLambertMaterial({
+                        map: texture
+                    }))
+                    obj.name = colorsflag
+                    scene.add(obj)
+                    obj.position.set(0 + i * cubeAttr.width, 0 + j * cubeAttr.height, 0 + k * cubeAttr.gao)
+                }
+            }
+        }
+    }
+
+    //生成canvas素材
+    function faces(rgbaColor) {
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        var context = canvas.getContext('2d');
+        if (context) {
+            //画一个宽高都是256的黑色正方形
+            context.fillStyle = 'rgba(0,0,0,1)';
+            context.fillRect(0, 0, 256, 256);
+            //在内部用某颜色的16px宽的线再画一个宽高为224的圆角正方形并用改颜色填充
+            context.rect(16, 16, 224, 224);
+            context.lineJoin = 'round';
+            context.lineWidth = 16;
+            context.fillStyle = rgbaColor;
+            context.strokeStyle = rgbaColor;
+            context.font = "30px Courier New";
+            context.stroke();
+            context.fill();
+        } else {
+            alert('您的浏览器不支持Canvas无法预览.\n');
+        }
+        return canvas;
+    }
+
+
+    var bbb = []
+    function animations(selection) {
+
+        new TWEEN.Tween(selection.position)
+                .to({
+                    x: 340,
+                    y: 40,
+                    z: 40
+                }, 1500)
+                .easing(TWEEN.Easing.Elastic.Out)
+                .start();
+
+        new TWEEN.Tween(selection.rotation).to({
+                    x: 2 * Math.PI,
+                    y: 2 * Math.PI,
+                    z: 2 * Math.PI
+                }, 2000)
+                .easing(TWEEN.Easing.Elastic.Out).start();
+        var objbbb
+        for (var i = 0; i < scene.children.length; i++) {
+            if (i !== 0) {
+                if(scene.children.name=="1"||
+                        scene.children.name=="1"||
+                        scene.children.name=="2"||
+                        scene.children.name=="3"||
+                        scene.children.name=="4"||
+                        scene.children.name=="5"||
+                        scene.children.name=="6"||
+                        scene.children.name=="7"||
+                        scene.children.name=="8"||
+                        scene.children.name=="9"
+                ){
+                    objbbb = new THREE.Object3D()
+                    objbbb.add(scene.children[i])
+                }
+
+            }
+        }
+        scene.add(objbbb);
+        console.log(objbbb)
+
+    }
+
+
+    var newsss;
+    function oldps(selection) {
+        oldps = oldps
+        for (var i = 0; i < newps.length; i++) {
+            if (Number(oldps.name) == (i + 1)) {
+                newsss = newps[i]
+            }
+        }
+        new TWEEN.Tween(oldps.position)
+                .to(newsss, 1500)
+                .easing(TWEEN.Easing.Elastic.Out)
+                .start();
+
+        new TWEEN.Tween(newps.rotation).to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 2000)
+                .easing(TWEEN.Easing.Elastic.Out).start();
+
+    }
+
+
+    //渲染
+    var step = 0
+    function render() {
+        renderer.clear();
+        renderer.render(scene, camera);
+        step += 0.01
+        TWEEN.update();
+
+        window.requestAnimFrame(render);
+    }
+    document.addEventListener('mousedown', onMouseMove, false);
+    //    document.addEventListener('mouseup', oldps, false);
+
+
+    var selection;
+    var INTERSECTED;
+    var raycaster = new THREE.Raycaster();//光线碰撞检测器
+    var mouse = new THREE.Vector2();//存储鼠标坐标或者触摸坐标
+    var flag = 0
+
+    var oldps
+    var newps = []
+    function onMouseMove(event) {
+        event.preventDefault();
+//        for (var i = 0; i < scene.children.length; i++) {
+//            if (i !== 0) {
+//                newps.push(scene.children[i].position)
+//            }
+//        }
+//        console.log(newps)
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        //射线
+        raycaster.setFromCamera(mouse, camera);
+        var intersects = raycaster.intersectObjects(scene.children);
+
+        if (intersects.length > 0 && intersects[0].object.name != "") {
+            flag++
+            /*取第一个交汇对像（最接近相机）*/
+            if (INTERSECTED != intersects[0].object) {
+                selection = intersects[0].object;
+//                if (flag == 1) {
+                animations(selection)
+//                }
+            }
+        } else {
+            flag = 0
+        }
+    }
+</script>
+</body>
+</html>
